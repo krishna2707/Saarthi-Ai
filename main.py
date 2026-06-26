@@ -23,8 +23,6 @@ sp = spotipy.Spotify(
 r = sr.Recognizer()
 with sr.Microphone() as source:
     print("Say something!")
-    devices = sp.devices()
-    print(devices)
     audio = r.listen(source)
 
 
@@ -34,13 +32,18 @@ def speak(text):
      
 
 def browse(tab):
-      engine.say(f"Opening {tab} ")
-      engine.runAndWait()
-      webbrowser.open_new_tab(websites[tab])
+      if tab in websites:
+        engine.say(f"Opening {tab} ")
+        engine.runAndWait()
+        webbrowser.open_new_tab(websites[tab])
+      else:
+          speak("Website doesnt exist")
 
 def song(songname):
     try:
-        results = sp.search(q=songname, type="track", limit=5)
+        devices = sp.devices()
+        print(devices)
+        results = sp.search(q=songname, type="track", limit=3)
         track = results["tracks"]["items"][0]
         uri = track["uri"]
         sp.start_playback(uris=[uri])
@@ -48,6 +51,8 @@ def song(songname):
         engine.runAndWait()
     except:
         print("No device is connected")
+
+        
 def time():
     hour=datetime.now().strftime("%H")
     minutes=datetime.now().strftime("%M")
