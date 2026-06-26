@@ -46,3 +46,4 @@ htmlcov/
 #Ignore these files for now
 sarvam.py
 test.py
+.cache

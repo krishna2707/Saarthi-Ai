@@ -3,6 +3,7 @@ import pyttsx3
 import webbrowser
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
+from datetime import datetime
 from config import SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET
 engine = pyttsx3.init()
 voices = engine.getProperty('voices')
@@ -34,7 +35,8 @@ websites = {
     "instagram": "https://www.instagram.com",
     "github": "https://github.com",
     "leetcode": "https://leetcode.com",
-    "gmail": "https://mail.google.com"
+    "gmail": "https://mail.google.com",
+    "spotify": "https://open.spotify.com/"
 }
 
 def browse(tab):
@@ -52,12 +54,31 @@ def song(songname):
         engine.runAndWait()
     except:
         print("No device is connected")
+def time():
+    hour=datetime.now().strftime("%H")
+    minutes=datetime.now().strftime("%M")
+    engine.say(f"The current time is {hour} hours and {minutes} minutes")
+    engine.runAndWait()
+     
+def date():
+     todaydate=datetime.now().strftime("%d")
+     day=datetime.now().strftime("%A")
+     year=datetime.now().strftime("%Y")
+     month=datetime.now().strftime("%B")
+     engine.say(f"Today is {day} {todaydate} of {month} of year {year}")
+     engine.runAndWait()
+
+     
 
 def process(command):
     if(command.startswith("play")):
         song(command.removeprefix("play").strip())
     elif(command.startswith("open")):
         browse(command.split(" ")[1])
+    elif("time" in command):
+         time()
+    elif("date" in command):
+         date()
 
 if __name__=="__main__":
         try:
