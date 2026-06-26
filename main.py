@@ -5,6 +5,7 @@ import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 from datetime import datetime
 from config import SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET
+from websites import websites
 engine = pyttsx3.init()
 voices = engine.getProperty('voices')
 engine.setProperty('voice', voices[1].id) 
@@ -26,18 +27,11 @@ with sr.Microphone() as source:
     print(devices)
     audio = r.listen(source)
 
-websites = {
-    "youtube": "https://www.youtube.com",
-    "reddit": "https://www.reddit.com",
-    "linkedin": "https://www.linkedin.com",
-    "claude": "https://claude.ai",
-    "chatgpt": "https://chatgpt.com",
-    "instagram": "https://www.instagram.com",
-    "github": "https://github.com",
-    "leetcode": "https://leetcode.com",
-    "gmail": "https://mail.google.com",
-    "spotify": "https://open.spotify.com/"
-}
+
+def speak(text):
+     engine.say(text)
+     engine.runAndWait()
+     
 
 def browse(tab):
       engine.say(f"Opening {tab} ")
