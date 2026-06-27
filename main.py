@@ -6,9 +6,7 @@ from spotipy.oauth2 import SpotifyOAuth
 from datetime import datetime
 from config import SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET
 from websites import websites
-engine = pyttsx3.init()
-voices = engine.getProperty('voices')
-engine.setProperty('voice', voices[1].id) 
+ 
 
 
 sp = spotipy.Spotify(
@@ -19,22 +17,20 @@ sp = spotipy.Spotify(
         scope="user-read-playback-state user-modify-playback-state"
     )
 )
-# obtain audio from the microphone
-r = sr.Recognizer()
-with sr.Microphone() as source:
-    print("Say something!")
-    audio = r.listen(source)
 
 
 def speak(text):
+     engine = pyttsx3.init()
+     voices = engine.getProperty('voices')
+     engine.setProperty('voice', voices[0].id)
      engine.say(text)
      engine.runAndWait()
+     print("hello")
      
 
 def browse(tab):
       if tab in websites:
-        engine.say(f"Opening {tab} ")
-        engine.runAndWait()
+        speak(f"Opening {tab} ")
         webbrowser.open_new_tab(websites[tab])
       else:
           speak("Website doesnt exist")
@@ -47,8 +43,7 @@ def song(songname):
         track = results["tracks"]["items"][0]
         uri = track["uri"]
         sp.start_playback(uris=[uri])
-        engine.say(f"Playing {songname}")
-        engine.runAndWait()
+        speak(f"Playing {songname}")
     except:
         print("No device is connected")
 
@@ -56,16 +51,14 @@ def song(songname):
 def time():
     hour=datetime.now().strftime("%H")
     minutes=datetime.now().strftime("%M")
-    engine.say(f"The current time is {hour} hours and {minutes} minutes")
-    engine.runAndWait()
+    speak(f"The current time is {hour} hours and {minutes} minutes")
      
 def date():
      todaydate=datetime.now().strftime("%d")
      day=datetime.now().strftime("%A")
      year=datetime.now().strftime("%Y")
      month=datetime.now().strftime("%B")
-     engine.say(f"Today is {day} {todaydate} of {month} of year {year}")
-     engine.runAndWait()
+     speak(f"Today is {day} {todaydate} of {month} of year {year}")
 
      
 
@@ -79,11 +72,24 @@ def process(command):
     elif("date" in command):
          date()
 
+
 if __name__=="__main__":
         try:
-            command= r.recognize_google(audio)
-            print(command)
-            process(command.lower())
+         r = sr.Recognizer()
+         while(True):
+            with sr.Microphone() as source:
+              print("Recognising!")
+              audio = r.listen(source)
+            wakeword= r.recognize_google(audio)
+            print(wakeword)
+            if(wakeword.lower()=="krishna"):
+               speak("Boliye")
+               with sr.Microphone() as source:
+                 print("Speak")
+                 audio = r.listen(source)
+                 command=r.recognize_google(audio)
+                 print(command)
+                 process(command.lower())
 
         except sr.UnknownValueError:
             print("Google Speech Recognition could not understand audio")
