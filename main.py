@@ -2,11 +2,13 @@ import speech_recognition as sr
 import pyttsx3
 import webbrowser
 import spotipy
+import pywhatkit
 from spotipy.oauth2 import SpotifyOAuth
 from datetime import datetime
 from config import SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET,GEMINI_API_KEY
 from websites import websites
 from google import genai
+from whatsapp import phone_dict
 
 
 client = genai.Client(api_key=GEMINI_API_KEY)
@@ -59,8 +61,11 @@ def time():
 
 def process_ai(text):
     interaction = client.interactions.create(
-      model="gemini-3.5-flash",
-      system_instruction="You are a personal assistant named Krishna.Dont tell your name again and again Since i will give your output to a text to speech convert dont use asterix comma hash as it speaks in text to speech. Keep output short",
+      model="gemini-2.5-flash",
+      system_instruction = (
+      "You are Krishna, a concise voice assistant. "
+       "Reply in plain text without markdown."
+),
       input=text
 )
     speak(interaction.output_text)
@@ -73,7 +78,15 @@ def date():
      year=datetime.now().strftime("%Y")
      month=datetime.now().strftime("%B")
      speak(f"Today is {day} {todaydate} of {month} of year {year}")
-     
+
+def whatsapp(name,message):
+    pywhatkit.sendwhatmsg_instantly(
+    phone_dict[name],
+    message,
+    wait_time=10,
+    tab_close=True,
+    close_time=3
+)
 
 def process(command):
     if(command.startswith("play")):
@@ -84,6 +97,10 @@ def process(command):
          time()
     elif("date" in command):
          date()
+    elif("whatsapp" in command):
+        name=command.split(maxsplit=2)[1]
+        message=command.split(maxsplit=2)[2]
+        whatsapp(name,message)
     else:
         process_ai(command)
 
@@ -95,16 +112,20 @@ if __name__=="__main__":
             with sr.Microphone() as source:
               print("Recognising!")
               audio = r.listen(source)
-            wakeword= r.recognize_google(audio)
+              wakeword= r.recognize_google(audio)
             print(wakeword)
-            if(wakeword.lower()=="krishna"):
-               speak("Boliye")
+            if "assistant" in wakeword.lower():
+               speak("Boliye sir")
+               print("Speak")
                with sr.Microphone() as source:
-                 print("Speak")
-                 audio = r.listen(source)
-                 command=r.recognize_google(audio)
-                 print(command)
-                 process(command.lower())
+                audio = r.listen(
+                       source,
+                       timeout=5,
+                       phrase_time_limit=10
+                    )
+                command=r.recognize_google(audio)
+                print(command)
+                process(command.lower())
         except sr.UnknownValueError:
             print("Google Speech Recognition could not understand audio")
         except sr.RequestError as e:
