@@ -3,13 +3,14 @@ import pyttsx3
 import webbrowser
 import spotipy
 import pywhatkit
+import pyautogui
 from spotipy.oauth2 import SpotifyOAuth
 from datetime import datetime
 from config import SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET,GEMINI_API_KEY
 from websites import websites
 from google import genai
 from whatsapp import phone_dict
-
+from tts_sarvam import speak
 
 client = genai.Client(api_key=GEMINI_API_KEY)
  
@@ -24,7 +25,7 @@ sp = spotipy.Spotify(
 )
 
 
-def speak(text):
+def speak_old(text):
      engine = pyttsx3.init()
      voices = engine.getProperty('voices')
      engine.setProperty('voice', voices[0].id)
@@ -61,23 +62,23 @@ def time():
 
 def process_ai(text):
     interaction = client.interactions.create(
-      model="gemini-2.5-flash",
-      system_instruction = (
-      "You are Krishna, a concise voice assistant. "
-       "Reply in plain text without markdown."
+    model="gemini-2.5-pro",
+    system_instruction = (
+    "You are Krishna, a concise voice assistant. "
+    "Reply in plain text without markdown."
 ),
-      input=text
+    input=text
 )
     speak(interaction.output_text)
 
 
 
 def date():
-     todaydate=datetime.now().strftime("%d")
-     day=datetime.now().strftime("%A")
-     year=datetime.now().strftime("%Y")
-     month=datetime.now().strftime("%B")
-     speak(f"Today is {day} {todaydate} of {month} of year {year}")
+    todaydate=datetime.now().strftime("%d")
+    day=datetime.now().strftime("%A")
+    year=datetime.now().strftime("%Y")
+    month=datetime.now().strftime("%B")
+    speak(f"Today is {day} {todaydate} of {month} of year {year}")
 
 def whatsapp(name,message):
     pywhatkit.sendwhatmsg_instantly(
@@ -101,14 +102,18 @@ def process(command):
         name=command.split(maxsplit=2)[1]
         message=command.split(maxsplit=2)[2]
         whatsapp(name,message)
+    elif("screenshot" in command):
+        speak("Screenshot saved as screen.png")
+        screenshot = pyautogui.screenshot()
+        screenshot.save("screen.png")
     else:
         process_ai(command)
 
 
 if __name__=="__main__":
+    while(True):
         try:
-         r = sr.Recognizer()
-         while(True):
+            r = sr.Recognizer()
             with sr.Microphone() as source:
               print("Recognising!")
               audio = r.listen(source)
@@ -125,8 +130,9 @@ if __name__=="__main__":
                     )
                 command=r.recognize_google(audio)
                 print(command)
+                if(command.lower()=="stop"): break
                 process(command.lower())
         except sr.UnknownValueError:
-            print("Google Speech Recognition could not understand audio")
+              print("Google Speech Recognition could not understand audio")
         except sr.RequestError as e:
-            print("Could not request results from Google Speech Recognition service; {0}".format(e))
+              print("Could not request results from Google Speech Recognition service; {0}".format(e))
